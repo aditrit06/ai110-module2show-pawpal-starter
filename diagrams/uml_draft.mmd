@@ -1,0 +1,43 @@
+classDiagram
+    class Pet {
+    +pet_id: int
+    +name: str
+    +age: int
+    +breed: str
+    +tasks: List~Task~
+    +add_task(task: Task)
+    +get_tasks()
+}
+
+class Task {
+    +title: str
+    +due_date: date
+    +priority: str
+    +recurring: bool
+    +completed: bool
+    +mark_complete()
+}
+
+class Scheduler {
+    +tasks: List~Task~
+    +add_task(task: Task)
+    +sort_tasks()
+    +detect_conflicts()
+    +get_upcoming_tasks()
+}
+
+Owner "1" --> "0..*" Pet : owns
+Pet "1" --> "0..*" Task : has
+Scheduler "1" o-- "0..*" Task : manages
+
+    class ClassName {
+        +type attribute
+        +method() returnType
+    }
+
+    class AnotherClass {
+        +type attribute
+        +method() returnType
+    }
+
+    ClassName --> AnotherClass : relationship
