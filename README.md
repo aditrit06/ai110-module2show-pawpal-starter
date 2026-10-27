@@ -201,16 +201,16 @@ These tests help verify that tasks can be added to pets and marked as completed.
 
 ## 📐 Smarter Scheduling
 
-PawPal+ includes a foundation for more advanced scheduling algorithms.
+PawPal+ can sort and filter tasks, detect conflicts, and create the next occurrence of a recurring task.
 
 | Feature | Method(s) | Description |
 |---|---|---|
-| Task sorting | `sort_tasks()` | Organizes tasks by scheduled time. |
-| Filtering | `get_upcoming_tasks()` | Retrieves upcoming care tasks. |
-| Conflict handling | `detect_conflicts()` | Provides logic for identifying overlapping scheduled activities. |
-| Recurring tasks | Task recurrence attributes | Stores information about repeating care activities. |
+| Task sorting | `Scheduler.sort_by_time()` and `Scheduler.sort_tasks()` | Orders tasks by scheduled date and time; `sort_tasks()` also uses priority to break ties. |
+| Filtering | `Scheduler.filter_tasks(pet_name=..., completed=...)` | Selects tasks by pet name, completion status, or both. `Scheduler.get_upcoming_tasks()` returns incomplete tasks scheduled now or later. |
+| Conflict detection | `Scheduler.detect_conflicts()` and `Scheduler.get_conflict_warnings()` | Finds tasks with the same start time or overlapping durations and returns readable warnings. |
+| Recurring tasks | `Scheduler.mark_task_complete()` | Completing a daily or weekly task creates its next instance one or seven days later, preserving the scheduled time, priority, and duration. |
 
-The current CLI demonstration confirms chronological sorting across multiple pets. Additional verification of conflict handling, recurrence, and filtering will be completed during further development.
+The CLI demonstration adds tasks out of order, filters incomplete tasks for one pet, prints conflict warnings, and completes a daily task to show its next occurrence.
 
 ## 📸 Demo Walkthrough
 

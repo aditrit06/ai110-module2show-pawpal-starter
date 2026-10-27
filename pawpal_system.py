@@ -75,6 +75,10 @@ class Scheduler:
         if task not in self.tasks:
             self.tasks.append(task)
 
+    def sort_by_time(self) -> list[Task]:
+        """Return all owner tasks ordered by scheduled date and time."""
+        return sorted(self._refresh_tasks(), key=lambda task: _as_datetime(task.due_date))
+
     def sort_tasks(self) -> list[Task]:
         """Sort the owner's tasks by scheduled time, then priority."""
         priority_order = {"high": 0, "medium": 1, "low": 2}
@@ -88,12 +92,59 @@ class Scheduler:
                 scheduled_at = datetime.combine(scheduled, datetime.min.time())
             return scheduled_at, priority_order.get(task.priority.lower(), 3)
 
+        return sorted(self._refresh_tasks(), key=sort_key)
+
+    def filter_tasks(
+        self, *, pet_name: str | None = None, completed: bool | None = None
+    ) -> list[Task]:
+        """Filter tasks by pet name and/or completion status."""
+        pets_by_task = {
+            id(task): pet
+            for pet in self.owner.get_pets()
+            for task in pet.get_tasks()
+        }
+        tasks = self._refresh_tasks()
+        if pet_name is not None:
+            wanted_name = pet_name.strip().casefold()
+            tasks = [
+                task for task in tasks
+                if pets_by_task.get(id(task))
+                and pets_by_task[id(task)].name.casefold() == wanted_name
+            ]
+        if completed is not None:
+            tasks = [task for task in tasks if task.completed is completed]
+        return sorted(tasks, key=lambda task: _as_datetime(task.due_date))
+
+    def mark_task_complete(self, task: Task) -> Task | None:
+        """Complete a task and add its next daily or weekly occurrence."""
+        pet = next(
+            (pet for pet in self.owner.get_pets() if any(saved is task for saved in pet.get_tasks())),
+            None,
+        )
+        if pet is None:
+            raise ValueError("Task does not belong to a pet owned by this scheduler.")
+
+        task.mark_complete()
+        frequency = task.recurrence_frequency.strip().casefold()
+        days = {"daily": 1, "weekly": 7}.get(frequency)
+        if days is None:
+            self._refresh_tasks()
+            return None
+
+        next_due = task.due_date + timedelta(days=days)
+        next_task = Task(
+            title=task.title,
+            due_date=next_due,
+            priority=task.priority,
+            recurrence_frequency=task.recurrence_frequency,
+            duration_minutes=task.duration_minutes,
+        )
+        pet.add_task(next_task)
         self._refresh_tasks()
-        self.tasks.sort(key=sort_key)
-        return list(self.tasks)
+        return next_task
 
     def detect_conflicts(self) -> list[tuple[Task, Task]]:
-        """Return pairs of tasks whose scheduled time ranges overlap."""
+        """Return pairs with overlapping durations or identical start times."""
         tasks = self.sort_tasks()
         conflicts: list[tuple[Task, Task]] = []
         for index, first in enumerate(tasks):
@@ -102,9 +153,33 @@ class Scheduler:
             for second in tasks[index + 1 :]:
                 second_start = _as_datetime(second.due_date)
                 second_end = second_start + timedelta(minutes=max(0, second.duration_minutes))
-                if first_start < second_end and second_start < first_end:
+                same_start = first_start == second_start
+                overlaps = first_start < second_end and second_start < first_end
+                if same_start or overlaps:
                     conflicts.append((first, second))
         return conflicts
+
+    def get_conflict_warnings(self) -> list[str]:
+        """Return readable warnings for all detected scheduling conflicts."""
+        warnings = []
+        for first, second in self.detect_conflicts():
+            first_pet = self._pet_for_task(first)
+            second_pet = self._pet_for_task(second)
+            first_name = first_pet.name if first_pet else "Unknown pet"
+            second_name = second_pet.name if second_pet else "Unknown pet"
+            when = _as_datetime(first.due_date).strftime("%b %d at %I:%M %p")
+            warnings.append(
+                f"Warning: {first.title} ({first_name}) and {second.title} "
+                f"({second_name}) conflict around {when}."
+            )
+        return warnings
+
+    def _pet_for_task(self, task: Task) -> Pet | None:
+        """Find the owner pet that contains a task."""
+        return next(
+            (pet for pet in self.owner.get_pets() if any(saved is task for saved in pet.get_tasks())),
+            None,
+        )
 
     def get_upcoming_tasks(self) -> list[Task]:
         """Return incomplete tasks scheduled now or in the future, in order."""

@@ -32,6 +32,10 @@ These changes helped make my design more organized and prepared it for the sched
 
 ## 2. Scheduling Logic and Tradeoffs
 
+### 2b. Tradeoffs
+
+Conflict detection compares scheduled start times and task durations. This catches exact-time conflicts and overlapping appointments, but it assumes each task's duration is accurate and does not account for travel time or setup between activities. Keeping the check focused on time makes the warning easy to understand while leaving those real-world details for a later version.
+
 During Phase 2, I used AI to help turn my UML design into working Python code. AI helped me implement the Owner, Pet, Task, and Scheduler classes and suggested how the Scheduler could retrieve tasks from multiple pets using the Owner's `get_all_tasks()` method.
 
 One suggestion I accepted was keeping each pet's tasks in the Pet class instead of maintaining duplicate task lists. This made the design simpler and helped keep the data organized. I also used AI to generate a demo script and two pytest tests. I chose to keep the implementation beginner-friendly rather than adding unnecessary complexity.
