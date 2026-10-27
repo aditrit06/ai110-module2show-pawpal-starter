@@ -37,7 +37,8 @@ those tasks into a daily schedule.
     )
 
 st.divider()
-st.subheader("Your Pets")
+st.header("1. Your Pets")
+st.caption("Add the pets whose care you want to organize.")
 
 with st.form("add_pet_form"):
     pet_name = st.text_input("Pet name", value="Mochi")
@@ -74,7 +75,8 @@ else:
     st.info("Add a pet before scheduling a task.")
 
 st.divider()
-st.subheader("Schedule a Task")
+st.header("2. Schedule a Task")
+st.caption("Choose a pet, set a date and time, and add a care task.")
 
 if pets:
     pet_choices = {pet.pet_id: pet for pet in pets}
@@ -91,6 +93,15 @@ if pets:
             "Duration (minutes)", min_value=1, max_value=240, value=20
         )
         priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
+        recurrence = st.selectbox(
+            "Repeat",
+            ["none", "daily", "weekly"],
+            format_func=lambda frequency: {
+                "none": "Does not repeat",
+                "daily": "Daily",
+                "weekly": "Weekly",
+            }[frequency],
+        )
         submitted_task = st.form_submit_button("Add Task")
 
     if submitted_task:
@@ -102,6 +113,7 @@ if pets:
                 title=task_title.strip(),
                 due_date=datetime.combine(task_date, task_time),
                 priority=priority,
+                recurrence_frequency=recurrence,
                 duration_minutes=int(duration),
             )
             selected_pet.add_task(task)
@@ -110,22 +122,79 @@ else:
     st.caption("Add a pet to enable task scheduling.")
 
 st.divider()
-st.subheader("Today's Schedule")
+st.header("3. Care Schedule")
+st.caption("Review upcoming care, narrow the list with filters, and mark tasks complete.")
 
 scheduler = Scheduler(owner)
-sorted_tasks = scheduler.sort_tasks()
-if sorted_tasks:
-    for task in sorted_tasks:
-        task_pet = next(
-            pet for pet in owner.get_pets() if any(saved_task is task for saved_task in pet.get_tasks())
+all_sorted_tasks = scheduler.sort_tasks()
+pet_filter, status_filter = st.columns(2)
+with pet_filter:
+    selected_pet_name = st.selectbox(
+        "Filter by pet",
+        options=["All Pets", *[pet.name for pet in pets]],
+    )
+with status_filter:
+    selected_status = st.selectbox(
+        "Filter by completion",
+        options=["All", "Completed", "Incomplete"],
+    )
+
+filtered_tasks = scheduler.filter_tasks(
+    pet_name=None if selected_pet_name == "All Pets" else selected_pet_name,
+    completed={"All": None, "Completed": True, "Incomplete": False}[selected_status],
+)
+# Keep the ordering from the Scheduler's main sorting method after applying filters.
+filtered_task_ids = {id(task) for task in filtered_tasks}
+visible_tasks = [task for task in all_sorted_tasks if id(task) in filtered_task_ids]
+
+st.subheader("Scheduled Tasks")
+if visible_tasks:
+    task_pets = {
+        id(task): pet
+        for pet in pets
+        for task in pet.get_tasks()
+    }
+    table_rows = []
+    for task in visible_tasks:
+        task_pet = task_pets.get(id(task))
+        scheduled_at = task.due_date
+        table_rows.append(
+            {
+                "Date and time": scheduled_at.strftime("%b %d, %Y %I:%M %p"),
+                "Pet": task_pet.name if task_pet else "Unknown pet",
+                "Task": task.title,
+                "Priority": task.priority.title(),
+                "Status": "Completed" if task.completed else "Incomplete",
+                "Repeats": task.recurrence_frequency.title(),
+            }
         )
-        if isinstance(task.due_date, datetime):
-            task_time_text = task.due_date.strftime("%b %d, %I:%M %p")
-        else:
-            task_time_text = task.due_date.strftime("%b %d")
-        st.write(
-            f"{task_time_text} | **{task_pet.name}** | {task.title} "
-            f"| Priority: {task.priority}"
-        )
+    st.dataframe(table_rows, use_container_width=True, hide_index=True)
+
+    st.subheader("Mark a Task Complete")
+    incomplete_tasks = [task for task in visible_tasks if not task.completed]
+    if incomplete_tasks:
+        for index, task in enumerate(incomplete_tasks):
+            task_pet = task_pets.get(id(task))
+            due_text = task.due_date.strftime("%b %d, %Y at %I:%M %p")
+            action_col, button_col = st.columns([4, 1])
+            with action_col:
+                st.write(f"**{task.title}** for {task_pet.name if task_pet else 'Unknown pet'} — {due_text}")
+            with button_col:
+                if st.button("Complete", key=f"complete_task_{id(task)}_{index}"):
+                    next_task = scheduler.mark_task_complete(task)
+                    st.success(f"Marked {task.title} complete.")
+                    if next_task is not None:
+                        st.info(f"Next occurrence scheduled for {next_task.due_date:%b %d, %Y at %I:%M %p}.")
+
+    else:
+        st.info("There are no incomplete tasks in this view.")
 else:
-    st.info("No tasks scheduled yet.")
+    st.info("No tasks match these filters yet. Add a task or choose different filters.")
+
+st.subheader("Schedule Conflicts")
+conflict_warnings = scheduler.get_conflict_warnings()
+if conflict_warnings:
+    for warning in conflict_warnings:
+        st.warning(warning)
+else:
+    st.success("No scheduling conflicts found.")
