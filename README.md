@@ -1,94 +1,297 @@
 # PawPal+ (Module 2 Project)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+PawPal+ is a Python-based pet care management system designed to help pet owners organize their pets' daily routines, including feeding, walking, medications, grooming, and appointments.
 
-## Scenario
+The application uses object-oriented programming (OOP) to manage multiple pets, track their tasks, and organize daily schedules based on scheduled times and priorities.
 
-A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
+## 🐾 Scenario
 
-- Track pet care tasks (walks, feeding, meds, enrichment, grooming, etc.)
-- Consider constraints (time available, priority, owner preferences)
-- Produce a daily plan and explain why it chose that plan
+A busy pet owner needs help staying consistent with pet care. PawPal+ is designed to help owners:
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
+- Track daily pet care activities such as feeding, walking, medications, and grooming.
+- Organize tasks based on scheduled times and priorities.
+- Manage care routines for multiple pets.
+- Track completed and upcoming tasks.
+- Identify potential scheduling conflicts.
+- Support recurring activities such as daily feedings and weekly grooming.
 
-## What you will build
+The goal is to create a simple and organized system that makes pet care easier to manage.
 
-Your final app should:
+## 🎯 What You Will Build
 
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+The final PawPal+ application is intended to:
 
-## Getting started
+- Allow users to enter basic owner and pet information.
+- Allow users to add and manage pet care tasks.
+- Store task details such as duration, priority, and scheduled time.
+- Generate an organized daily schedule.
+- Detect potential scheduling conflicts.
+- Support recurring tasks.
+- Display schedules through a Streamlit user interface.
+- Verify important functionality using automated tests.
+
+## ⚙️ Getting Started
 
 ### Setup
 
+Create and activate a Python virtual environment:
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install the required dependencies:
+
+```bash
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Suggested workflow
+### Run the CLI Demo
 
-1. Read the scenario carefully and identify requirements and edge cases.
-2. Draft a UML diagram (classes, attributes, methods, relationships).
-3. Convert UML into Python class stubs (no logic yet).
-4. Implement scheduling logic in small increments.
-5. Add tests to verify key behaviors.
-6. Connect your logic to the Streamlit UI in `app.py`.
-7. Refine UML so it matches what you actually built.
+To run the demonstration script:
+
+```bash
+python main.py
+```
+
+This script creates an owner with two pets, adds three care tasks, and displays the scheduled activities in chronological order.
+
+### Run the Tests
+
+To run the automated tests:
+
+```bash
+python -m pytest
+```
+
+## 🏗️ System Design
+
+PawPal+ was designed using a modular object-oriented architecture consisting of four main classes.
+
+### 1. Owner
+
+The Owner class stores information about the pet owner and manages multiple pets.
+
+Responsibilities:
+
+- Store owner information.
+- Add and retrieve pets.
+- Collect tasks from all pets using `get_all_tasks()`.
+
+### 2. Pet
+
+The Pet class represents an individual pet and stores its care tasks.
+
+Responsibilities:
+
+- Store pet information such as name, age, and breed.
+- Add new care tasks.
+- Retrieve the pet's scheduled tasks.
+
+### 3. Task
+
+The Task class represents a single pet care activity.
+
+Responsibilities:
+
+- Store task information such as title, scheduled time, duration, and priority.
+- Track completion status.
+- Store recurrence information.
+- Mark tasks as completed using `mark_complete()`.
+
+### 4. Scheduler
+
+The Scheduler class is responsible for organizing pet care tasks.
+
+Responsibilities:
+
+- Retrieve tasks from multiple pets through the Owner class.
+- Sort tasks by scheduled time.
+- Provide methods for detecting scheduling conflicts.
+- Retrieve upcoming tasks.
+
+### UML Diagram
+
+The initial system design is documented in:
+
+`diagrams/uml_draft.mmd`
+
+The diagram shows the relationships between Owner, Pet, Task, and Scheduler.
+
+## 💻 Implementation Summary
+
+I implemented the core PawPal+ backend using Python and object-oriented programming.
+
+The application separates responsibilities across four classes to make the code easier to understand, maintain, and expand.
+
+The Owner class manages multiple pets, while each Pet stores its individual care tasks. The Task class represents scheduled activities, and the Scheduler retrieves and organizes tasks across pets.
+
+I followed a CLI-first development approach, which allowed me to implement and verify the backend before connecting it to the Streamlit user interface.
+
+To demonstrate the implementation, I created a `main.py` script containing:
+
+- One pet owner.
+- Two pets named Max and Luna.
+- Three care tasks with different scheduled times.
+- A scheduler that displays tasks from both pets in chronological order.
+
+I also created automated tests using pytest to verify important functionality.
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+The following output was generated by running:
 
+```bash
+python main.py
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+
+### Today's Schedule
+
+```text
+Today's Schedule
+08:00 AM | Max | Feed | Priority: High
+10:00 AM | Max | Walk | Priority: Medium
+06:00 PM | Luna | Feed | Priority: High
 ```
+
+This output demonstrates that PawPal+ can organize tasks for multiple pets in chronological order.
+
+Each scheduled activity includes:
+
+- Scheduled time.
+- Pet name.
+- Task name.
+- Priority level.
 
 ## 🧪 Testing PawPal+
 
+I used pytest to verify that the core application functionality works correctly.
+
+### Test 1: Task Completion
+
+This test verifies that a task's completion status changes from `False` to `True` after calling `mark_complete()`.
+
+### Test 2: Task Addition
+
+This test verifies that adding a task to a pet increases the number of tasks associated with that pet.
+
+### Running the Tests
+
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest
 ```
 
-Sample test output:
+### Test Results
 
+```text
+================================= test session starts =================================
+platform darwin -- Python 3.13.14, pytest-9.1.1, pluggy-1.7.0
+collected 2 items
+
+tests/test_pawpal.py ..                                                         [100%]
+
+================================== 2 passed in 0.01s ==================================
 ```
-# Paste your pytest output here
-```
+
+Both automated tests passed successfully.
+
+These tests help verify that tasks can be added to pets and marked as completed.
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+PawPal+ includes a foundation for more advanced scheduling algorithms.
 
-| Feature | Method(s) | Notes |
-|---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Feature | Method(s) | Description |
+|---|---|---|
+| Task sorting | `sort_tasks()` | Organizes tasks by scheduled time. |
+| Filtering | `get_upcoming_tasks()` | Retrieves upcoming care tasks. |
+| Conflict handling | `detect_conflicts()` | Provides logic for identifying overlapping scheduled activities. |
+| Recurring tasks | Task recurrence attributes | Stores information about repeating care activities. |
+
+The current CLI demonstration confirms chronological sorting across multiple pets. Additional verification of conflict handling, recurrence, and filtering will be completed during further development.
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+The current command-line demonstration works as follows:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. **Create an Owner:** The application creates a pet owner who manages multiple pets.
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+2. **Add Pets:** Two pets, Max and Luna, are created and associated with the owner.
+
+3. **Create Tasks:** Three care tasks are created, including feeding and walking activities with different scheduled times and priorities.
+
+4. **Organize Tasks:** The Scheduler retrieves tasks from both pets and organizes them chronologically.
+
+5. **Display Schedule:** The terminal displays each task's scheduled time, pet name, activity, and priority.
+
+6. **Verify Functionality:** Automated pytest tests confirm that task completion and task addition work correctly.
+
+The Streamlit interface will be connected to the backend during a later phase.
+
+## 🤖 AI Collaboration
+
+AI was used throughout the design and implementation process to assist with planning, generating code, and reviewing the application structure.
+
+During the design phase, AI helped generate the UML class diagram and identify relationships between the Owner, Pet, Task, and Scheduler classes.
+
+After reviewing the initial design, AI suggested improvements such as adding more detailed scheduling information, clarifying the relationship between pets and tasks, and avoiding unnecessary duplication of task data.
+
+During implementation, AI assisted with generating Python class methods, creating the CLI demonstration, writing automated tests, and adding documentation.
+
+I reviewed these suggestions and focused on keeping the application beginner-friendly while still meeting the project requirements.
+
+To verify the AI-generated code, I ran the CLI demonstration and automated tests. The CLI displayed the expected tasks from both pets, and both pytest tests passed.
+
+This process helped me understand how AI can speed up development while still requiring human review, testing, and decision-making.
+
+## 🚀 Future Improvements
+
+Future improvements for PawPal+ include:
+
+- Connecting the Python backend to a Streamlit user interface.
+- Allowing users to add and edit tasks through the application.
+- Improving scheduling algorithms to account for available time and priorities.
+- Expanding recurring task management.
+- Providing explanations for scheduling decisions.
+- Adding more automated tests for scheduling conflicts and multi-pet behavior.
+
+## 📁 Project Structure
+
+```text
+ai110-module2show-pawpal-starter/
+├── diagrams/
+│   └── uml_draft.mmd
+├── tests/
+│   └── test_pawpal.py
+├── pawpal_system.py
+├── main.py
+├── app.py
+├── README.md
+├── reflection.md
+└── requirements.txt
+```
+
+## ✅ Project Progress
+
+**Phase 1: System Design**
+
+- Identified core application requirements.
+- Designed the main classes and relationships.
+- Created a Mermaid UML diagram.
+- Generated Python class skeletons.
+- Reviewed the design with AI.
+
+**Phase 2: Core Implementation**
+
+- Implemented the four main Python classes.
+- Created a CLI demonstration script.
+- Verified scheduling output across multiple pets.
+- Created two automated pytest tests.
+- Verified that both tests passed.
+- Documented the implementation and sample output.
+
+**Next Steps**
+
+Continue improving the scheduling algorithms, expand automated testing, and connect the backend to the Streamlit user interface.

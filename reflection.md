@@ -32,17 +32,13 @@ These changes helped make my design more organized and prepared it for the sched
 
 ## 2. Scheduling Logic and Tradeoffs
 
-**a. Constraints and priorities**
+During Phase 2, I used AI to help turn my UML design into working Python code. AI helped me implement the Owner, Pet, Task, and Scheduler classes and suggested how the Scheduler could retrieve tasks from multiple pets using the Owner's `get_all_tasks()` method.
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+One suggestion I accepted was keeping each pet's tasks in the Pet class instead of maintaining duplicate task lists. This made the design simpler and helped keep the data organized. I also used AI to generate a demo script and two pytest tests. I chose to keep the implementation beginner-friendly rather than adding unnecessary complexity.
 
-**b. Tradeoffs**
+To verify the AI-generated code, I ran `python main.py` and checked that the schedule displayed three tasks from two different pets in chronological order. I also ran `python -m pytest`, and both tests passed successfully.
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
-
----
+This experience helped me understand that AI can make coding faster, but it is still important to review the generated code and test it. I learned that successful AI collaboration involves giving clear instructions, understanding the suggestions, and verifying that the final implementation meets the project requirements.
 
 ## 3. AI Collaboration
 
@@ -85,3 +81,4 @@ These changes helped make my design more organized and prepared it for the sched
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
