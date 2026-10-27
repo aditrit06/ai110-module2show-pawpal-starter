@@ -93,3 +93,36 @@ def test_overlapping_tasks_produce_conflict_warning():
     assert len(warnings) == 1
     assert "Walk" in warnings[0]
     assert "Groom" in warnings[0]
+
+
+def test_empty_schedule_is_handled_safely():
+    """An empty pet schedule produces no tasks or conflicts."""
+    owner = Owner(owner_id=1, name="Alex")
+    pet = Pet(pet_id=1, name="Max", age=4, breed="Dog")
+    owner.add_pet(pet)
+    scheduler = Scheduler(owner)
+
+    # Sorting, filtering, and conflict detection are safe when there are no tasks.
+    assert scheduler.sort_by_time() == []
+    assert scheduler.filter_tasks() == []
+    assert scheduler.detect_conflicts() == []
+
+
+def test_tasks_at_exact_same_time_produce_conflict():
+    """Tasks starting together conflict even when both have zero duration."""
+    owner = Owner(owner_id=1, name="Alex")
+    pet = Pet(pet_id=1, name="Max", age=4, breed="Dog")
+    owner.add_pet(pet)
+    same_time = datetime(2026, 5, 1, 10, 0)
+    pet.add_task(Task("Medicine", same_time, "High", duration_minutes=0))
+    pet.add_task(Task("Checkup", same_time, "Medium", duration_minutes=0))
+
+    scheduler = Scheduler(owner)
+    conflicts = scheduler.detect_conflicts()
+    warnings = scheduler.get_conflict_warnings()
+
+    # The scheduler reports the same-time pair and names both tasks in its warning.
+    assert len(conflicts) == 1
+    assert len(warnings) == 1
+    assert "Medicine" in warnings[0]
+    assert "Checkup" in warnings[0]

@@ -167,37 +167,45 @@ Each scheduled activity includes:
 
 ## 🧪 Testing PawPal+
 
-I used pytest to verify that the core application functionality works correctly.
+The eight automated tests in `tests/test_pawpal.py` check that PawPal+ handles its main task and scheduling features:
 
-### Test 1: Task Completion
+- **Marking tasks complete:** Checks that a task changes from incomplete to complete.
+- **Adding tasks to pets:** Checks that a pet can store a new task.
+- **Sorting tasks chronologically:** Checks that tasks are returned in time order, even when added out of order.
+- **Filtering by pet and completion status:** Checks that results include only tasks matching the requested pet and completed or incomplete status.
+- **Creating the next occurrence of daily tasks:** Checks that completing a daily task marks the original complete and creates a task for the following day.
+- **Detecting overlapping tasks:** Checks that tasks with overlapping durations produce a readable warning.
+- **Handling empty schedules:** Checks that sorting and filtering return empty lists and conflict detection finds no conflicts when there are no tasks.
+- **Detecting identical start times:** Checks that tasks scheduled for the same time conflict, including when both tasks have zero duration.
 
-This test verifies that a task's completion status changes from `False` to `True` after calling `mark_complete()`.
+### Activate the Virtual Environment and Run the Tests
 
-### Test 2: Task Addition
-
-This test verifies that adding a task to a pet increases the number of tasks associated with that pet.
-
-### Running the Tests
+From the project folder, activate the virtual environment and run pytest:
 
 ```bash
+source .venv/bin/activate
 python -m pytest
 ```
 
-### Test Results
+### Successful Test Output
 
 ```text
-================================= test session starts =================================
-platform darwin -- Python 3.13.14, pytest-9.1.1, pluggy-1.7.0
-collected 2 items
+============================= test session starts ==============================
+platform darwin -- Python 3.13.14, pytest-9.1.1
+rootdir: /Users/aditritangeti/ai110-module2show-pawpal-starter
+plugins: anyio-4.15.1
+collected 8 items
 
-tests/test_pawpal.py ..                                                         [100%]
+tests/test_pawpal.py ........                                            [100%]
 
-================================== 2 passed in 0.01s ==================================
+============================== 8 passed in 0.01s ===============================
 ```
 
-Both automated tests passed successfully.
+### Confidence Level
 
-These tests help verify that tasks can be added to pets and marked as completed.
+⭐⭐⭐⭐☆ (4/5)
+
+The system passed its automated tests and handles important edge cases. More testing would be needed before using it in production.
 
 ## 📐 Smarter Scheduling
 
